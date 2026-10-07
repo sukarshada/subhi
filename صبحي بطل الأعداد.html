@@ -1,0 +1,415 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>صبحي بطل الأعداد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&family=Cairo:wght@600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<style>
+  /* Two parts: a big colorful LEARN screen (dots pair up two-by-two, families chart), */
+  /* then the arcade sorting GAME with the hero cheering صبحي by name. Single bright arcade look. */
+  :root{
+    --sky:#1b2550; --sky2:#2a356b; --card:#ffffff;
+    --ink:#20264a; --ink-soft:#6b76a8; --sun:#ffc23c;
+    --even:#2bd0b4; --even-dk:#12a58d; --even-ink:#06463b;
+    --odd:#ff6b6b; --odd-dk:#e24848; --odd-ink:#7d1414;
+    --blue:#6c8cff; --purple:#9a7bff;
+    --glow:#ffd166; --good:#34d65f;
+    --tile:#f1f5ff; --line:#e2e8ff;
+    color-scheme:light;
+    --disp:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;
+    --body:'Cairo',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;direction:rtl;font-family:var(--body);color:var(--ink);
+    background:
+      radial-gradient(900px 500px at 15% 0%, #35408a 0%, transparent 55%),
+      radial-gradient(800px 500px at 90% 100%, #3a2b6b 0%, transparent 55%),
+      linear-gradient(160deg,var(--sky),var(--sky2));
+    background-attachment:fixed;display:flex;align-items:center;justify-content:center;
+    padding:16px;overflow-x:hidden;touch-action:manipulation}
+  .wrap{width:100%;max-width:500px}
+  .card{background:var(--card);border-radius:28px;padding:18px 16px 16px;position:relative;overflow:hidden;
+    box-shadow:0 26px 60px -22px rgba(0,0,0,.55),0 2px 0 var(--line)}
+  .spark{position:absolute;pointer-events:none;font-size:.8rem;opacity:.5;animation:tw 2.4s ease-in-out infinite}
+  @keyframes tw{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:.8;transform:scale(1.1)}}
+
+  /* hero + speech */
+  .hero{display:flex;align-items:center;gap:10px;margin:2px 2px 6px;position:relative;z-index:2}
+  .avatar{font-size:2.3rem;line-height:1;filter:drop-shadow(0 4px 6px rgba(0,0,0,.15));animation:bob 2.6s ease-in-out infinite}
+  .avatar.happy{animation:hop .5s ease}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
+  @keyframes hop{0%{transform:translateY(0)}40%{transform:translateY(-14px) scale(1.15)}100%{transform:translateY(0)}}
+  .bubble{flex:1;min-width:0;background:var(--tile);border:2px solid var(--line);border-radius:16px;padding:9px 12px;font-weight:800;color:var(--ink);font-size:1rem;position:relative}
+  .bubble::before{content:"";position:absolute;right:-8px;top:16px;border:8px solid transparent;border-right-color:var(--tile)}
+
+  .btn{font-family:var(--disp);font-weight:800;border:none;cursor:pointer;border-radius:16px;transition:transform .1s,box-shadow .1s,filter .1s;-webkit-tap-highlight-color:transparent}
+  .btn:active{transform:translateY(2px) scale(.99)}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  .btn-go{background:linear-gradient(180deg,#ffd166,#ffb020);color:#6b3b00;font-size:1.35rem;padding:14px 36px;border-radius:999px;box-shadow:0 9px 0 #e0920e}
+  .btn-go:active{box-shadow:0 3px 0 #e0920e}
+  .linkbtn{background:none;border:none;color:var(--ink-soft);font-family:var(--disp);font-weight:800;font-size:.95rem;cursor:pointer;margin-top:10px;text-decoration:underline}
+
+  /* START */
+  .start{text-align:center;padding:10px 4px 6px;position:relative;z-index:2}
+  .bighero{font-size:3.4rem;animation:bob 2.6s ease-in-out infinite}
+  .title{font-family:var(--disp);font-weight:800;font-size:2.3rem;line-height:1.1;margin:6px 0 2px}
+  .title .n{color:var(--odd)}
+  .subtitle{color:var(--ink-soft);font-weight:700;margin:2px auto 14px;max-width:32ch}
+
+  /* FAMILIES chart */
+  .families{display:grid;gap:8px;margin:4px 0 12px}
+  .fam{display:flex;align-items:center;gap:8px;border-radius:16px;padding:9px 10px;font-family:var(--disp);font-weight:800}
+  .fam.even{background:#e2faf5;border:2px solid #bfeee4}
+  .fam.odd{background:#ffeaea;border:2px solid #ffc9c9}
+  .fam .lbl{font-size:1.05rem;min-width:3.2em}
+  .fam.even .lbl{color:var(--even-ink)} .fam.odd .lbl{color:var(--odd-ink)}
+  .pills{display:flex;direction:ltr;gap:7px;flex-wrap:wrap;flex:1;justify-content:center}
+  .pill{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;color:#fff;font-variant-numeric:tabular-nums}
+  .fam.even .pill{background:linear-gradient(180deg,#34dcc0,var(--even-dk))}
+  .fam.odd .pill{background:linear-gradient(180deg,#ff8585,var(--odd-dk))}
+  .pill.cur{outline:4px solid var(--sun);outline-offset:1px;transform:scale(1.12);transition:.2s}
+
+  /* LEARN stage */
+  .learnstage{text-align:center;background:var(--tile);border:2px solid var(--line);border-radius:20px;padding:14px 10px;margin-top:4px}
+  .bignum{font-family:var(--disp);font-weight:800;font-size:2.6rem;line-height:1;color:var(--ink)}
+  .bignum small{font-size:1rem;color:var(--ink-soft);font-weight:800}
+  .dotrow{display:flex;direction:ltr;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;min-height:66px;margin:12px 0 8px}
+  .dot{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#cdd7ff,var(--blue));box-shadow:0 4px 8px -2px rgba(108,140,255,.6);animation:pin .3s ease both}
+  @keyframes pin{from{transform:scale(0)}to{transform:scale(1)}}
+  .cap{display:flex;align-items:center;gap:4px;padding:6px 8px;background:#e2faf5;border:2px solid #bfeee4;border-radius:999px}
+  .cap .d{width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#9ff0e2,var(--even));box-shadow:0 4px 8px -2px rgba(43,208,180,.6)}
+  .cap .d.l{animation:joinL .5s ease both}
+  .cap .d.r{animation:joinR .5s ease both}
+  @keyframes joinL{from{transform:translateX(-24px);opacity:.3}to{transform:translateX(0);opacity:1}}
+  @keyframes joinR{from{transform:translateX(24px);opacity:.3}to{transform:translateX(0);opacity:1}}
+  .cap.lonely{background:#ffeaea;border-color:#ffb3b3;animation:wig .6s ease}
+  .cap.lonely .d{background:radial-gradient(circle at 32% 28%,#ffb3b3,var(--odd));box-shadow:0 0 0 4px #ffd4d4}
+  @keyframes wig{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+  .lonetag{font-family:var(--disp);font-weight:800;color:var(--odd-ink);font-size:.72rem;margin-inline-start:2px}
+  .result{min-height:1.8em;font-family:var(--disp);font-weight:800;font-size:1.3rem;margin-top:6px}
+  .result b{border-radius:8px;padding:2px 10px}
+  .result b.e{background:#cdf5ee;color:var(--even-ink)} .result b.o{background:#ffdede;color:var(--odd-ink)}
+
+  .learnctrls{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px}
+  .arrow{width:52px;height:52px;border-radius:50%;background:#eef2ff;border:2px solid #d4ddff;color:#4a5bbf;font-size:1.4rem;font-weight:800}
+  .arrow:disabled{opacity:.4}
+  .btn-pair{background:linear-gradient(180deg,#ffd166,#ffb020);color:#6b3b00;font-size:1.1rem;padding:13px 20px;border-radius:999px;box-shadow:0 7px 0 #e0920e;flex:1;max-width:260px}
+  .btn-pair:active{box-shadow:0 2px 0 #e0920e}
+  .btn-pair:disabled{filter:grayscale(.5) opacity(.6);box-shadow:0 7px 0 #e0920e}
+  .learnfoot{text-align:center;margin-top:12px}
+
+  /* GAME */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;position:relative;z-index:2}
+  .chip{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:800;padding:6px 12px;border-radius:999px;font-size:.98rem}
+  .chip.pts{background:#fff2c9;color:#9a6a00;border:2px solid #ffe29a}
+  .chip.combo{background:#ffe0e0;color:#b02a2a;border:2px solid #ffc2c2;opacity:0;transform:scale(.6);transition:.2s}
+  .chip.combo.on{opacity:1;transform:scale(1)}
+  .progress{flex:1;min-width:0;height:11px;background:var(--tile);border-radius:999px;overflow:hidden;border:2px solid var(--line)}
+  .progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sun),#ff9f45);transition:width .5s cubic-bezier(.22,1,.36,1)}
+
+  .arena{position:relative;z-index:2}
+  .numstage{display:flex;justify-content:center;align-items:center;min-height:148px;margin:4px 0 2px}
+  .numcard{background:linear-gradient(180deg,#ffffff,#f3f6ff);border:3px solid var(--line);border-radius:24px;padding:16px 24px;box-shadow:0 14px 30px -12px rgba(27,37,80,.4);animation:floaty 3s ease-in-out infinite;position:relative}
+  .numcard.fly-even{animation:flyE .5s ease forwards}
+  .numcard.fly-odd{animation:flyO .5s ease forwards}
+  .numcard.bad{animation:shk .4s ease}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @keyframes flyE{to{transform:translate(-120px,120px) scale(.3) rotate(-20deg);opacity:0}}
+  @keyframes flyO{to{transform:translate(120px,120px) scale(.3) rotate(20deg);opacity:0}}
+  @keyframes shk{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+  .num{direction:ltr;font-family:var(--disp);font-weight:800;font-size:3.5rem;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;display:inline-flex;align-items:flex-start}
+  .ones{position:relative;color:#b07a00;background:#fff3cf;border-radius:12px;padding:0 8px;margin-inline-start:2px;box-shadow:0 0 0 3px rgba(255,209,102,.6);animation:pls 1.4s ease-in-out infinite}
+  @keyframes pls{0%,100%{box-shadow:0 0 0 3px rgba(255,209,102,.5)}50%{box-shadow:0 0 0 7px rgba(255,209,102,.3)}}
+  .onestag{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-family:var(--body);font-size:.6rem;font-weight:800;color:#b07a00;white-space:nowrap}
+  .hintline{text-align:center;font-weight:800;color:var(--ink-soft);font-size:.92rem;margin:2px 0 10px}
+
+  .bins{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .bin{padding:16px 10px;border-radius:22px;color:#fff;font-family:var(--disp);font-weight:800;font-size:1.45rem;position:relative;transition:transform .1s,box-shadow .1s,filter .1s}
+  .bin .emoji{font-size:1.5rem;display:block;margin-bottom:2px}
+  .bin .sub{display:block;font-family:var(--body);font-weight:700;font-size:.76rem;opacity:.92;margin-top:3px}
+  .bin.even{background:linear-gradient(180deg,#34dcc0,var(--even-dk));box-shadow:0 8px 0 #0c8a76}
+  .bin.odd{background:linear-gradient(180deg,#ff8585,var(--odd-dk));box-shadow:0 8px 0 #b83636}
+  .bin.even:active{box-shadow:0 4px 0 #0c8a76} .bin.odd:active{box-shadow:0 4px 0 #b83636}
+  .bin:active{transform:translateY(3px)}
+  .bin:disabled{filter:grayscale(.5) opacity(.55)}
+  .bin.correct{animation:pop .5s ease}
+  .bin.show{outline:4px dashed #fff;outline-offset:-8px;animation:pop .6s ease}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.07)}100%{transform:scale(1)}}
+
+  .peek{margin-top:12px;background:#f6f9ff;border:2px solid var(--line);border-radius:16px;padding:10px;text-align:center;font-weight:800}
+  .peek .dots{display:flex;direction:ltr;flex-wrap:wrap;justify-content:center;gap:6px;margin:8px 0 6px}
+  .pr{display:flex;flex-direction:column;gap:4px;padding:5px 6px;background:#e9faf5;border:2px solid #c6eee5;border-radius:10px}
+  .pr.left{background:#ffecec;border-color:#ffc3c3}
+  .pr .dt{width:15px;height:15px;border-radius:50%;background:var(--even)}
+  .pr.left .dt{background:var(--odd);box-shadow:0 0 0 3px #ffd4d4}
+  .peek .say{font-size:.98rem;line-height:1.5}
+  .peek .say b{border-radius:6px;padding:1px 7px}
+  .peek .say b.e{background:#cdf5ee;color:var(--even-ink)} .peek .say b.o{background:#ffdede;color:var(--odd-ink)}
+
+  .btn-next{margin:12px auto 0;display:block;background:linear-gradient(180deg,#8ab6ff,#5b8def);color:#fff;font-size:1.12rem;padding:11px 32px;border-radius:999px;box-shadow:0 7px 0 #3f6fcf}
+  .btn-next:active{box-shadow:0 2px 0 #3f6fcf}
+  .pop-pts{position:absolute;left:50%;top:40%;transform:translateX(-50%);font-family:var(--disp);font-weight:800;font-size:1.6rem;color:var(--good);pointer-events:none;animation:rise 1s ease forwards;z-index:9}
+  @keyframes rise{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-40px) scale(1.1)}}
+
+  .win{text-align:center;padding:8px 4px;position:relative;z-index:2}
+  .win .trophy{font-size:4rem;display:block;animation:bob 2.2s ease-in-out infinite}
+  .win h2{font-family:var(--disp);font-weight:800;font-size:2rem;margin:4px 0 6px}
+  .win h2 .n{color:var(--odd)}
+  .win .final{font-weight:800;font-size:1.2rem;color:var(--ink-soft)}
+  .win .stars{font-size:1.7rem;letter-spacing:3px;margin:8px 0 16px}
+
+  .hide{display:none!important}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  @media (max-width:380px){.title{font-size:1.95rem}.num{font-size:3rem}.bin{font-size:1.25rem}.pill{width:33px;height:33px;font-size:1.1rem}.dot{width:30px;height:30px}.cap .d{width:28px;height:28px}}
+</style>
+
+<div class="wrap">
+  <div class="card" id="card">
+
+    <!-- top bar (game only) -->
+    <div class="topbar hide" id="topbar">
+      <div class="chip pts">⭐ <span id="ptsVal">0</span></div>
+      <div class="chip combo" id="comboChip">🔥 ×<span id="comboVal">2</span></div>
+      <div class="progress"><i id="progBar"></i></div>
+    </div>
+
+    <!-- START -->
+    <section class="start" id="startScreen">
+      <div class="bighero">🦸‍♂️</div>
+      <h1 class="title">صبحي <span class="n">بطل الأعداد</span></h1>
+      <p class="subtitle">أهلًا صبحي! 🌟 أول شي نتعلّم: زوجي ولا فردي؟</p>
+      <button class="btn btn-go" id="learnBtn">📚 نتعلّم الأول</button>
+      <div><button class="linkbtn" id="skipBtn">أعرف — يلا نلعب 🎮</button></div>
+    </section>
+
+    <!-- LEARN -->
+    <section class="learn hide" id="learnScreen">
+      <div class="hero"><div class="avatar" id="lavatar">🦸‍♂️</div><div class="bubble" id="lbubble">خلينا نشوف يا صبحي… كل 2 بيمسكوا بعض! 🤝</div></div>
+
+      <div class="families">
+        <div class="fam even"><span class="lbl">زوجي</span><div class="pills" id="pillsEven"></div></div>
+        <div class="fam odd"><span class="lbl">فردي</span><div class="pills" id="pillsOdd"></div></div>
+      </div>
+
+      <div class="learnstage">
+        <div class="bignum" id="learnNum">عندنا <span id="lnVal">2</span> <small>نقاط</small></div>
+        <div class="dotrow" id="dotrow"></div>
+        <div class="result" id="learnResult"></div>
+      </div>
+
+      <div class="learnctrls">
+        <button class="btn arrow" id="prevBtn">→</button>
+        <button class="btn btn-pair" id="pairBtn">🤝 خليهم يمسكوا بعض</button>
+        <button class="btn arrow" id="nextBtn">←</button>
+      </div>
+      <div class="learnfoot"><button class="btn btn-go hide" id="toGameBtn">🎮 يلا نلعب يا صبحي</button>
+        <div><button class="linkbtn" id="skip2Btn">تخطّى للّعب</button></div>
+      </div>
+    </section>
+
+    <!-- GAME -->
+    <section class="game hide" id="gameScreen">
+      <div class="hero"><div class="avatar" id="avatar">🦸‍♂️</div><div class="bubble" id="bubble">يلا يا صبحي! 💪</div></div>
+      <div class="arena">
+        <div class="numstage"><div class="numcard" id="numcard"></div></div>
+        <p class="hintline">👆 شوف منزلة الآحاد (المضيّة)</p>
+        <div class="bins" id="bins">
+          <button class="btn bin even" data-val="even"><span class="emoji">🟢</span>زوجي<span class="sub">0 2 4 6 8</span></button>
+          <button class="btn bin odd" data-val="odd"><span class="emoji">🔴</span>فردي<span class="sub">1 3 5 7 9</span></button>
+        </div>
+        <div id="peekBox"></div>
+      </div>
+    </section>
+
+    <!-- WIN -->
+    <section class="win hide" id="winScreen">
+      <span class="trophy">🏆</span>
+      <h2><span class="n">صبحي</span> بطل الأعداد!</h2>
+      <p class="final" id="finalMsg"></p>
+      <div class="stars" id="finalStars"></div>
+      <button class="btn btn-go" id="againBtn">نلعب كمان 🔁</button>
+    </section>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var NAME='صبحي', TOTAL=10;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function byId(id){return document.getElementById(id);}
+  function pick(a){return a[Math.floor(Math.random()*a.length)];}
+  var card=byId('card');
+
+  (function sprinkle(){
+    var pos=[[6,8],[92,12],[12,90],[88,88],[50,4]];
+    pos.forEach(function(p,i){var s=document.createElement('div');s.className='spark';s.textContent='✦';
+      s.style.left=p[0]+'%';s.style.top=p[1]+'%';s.style.animationDelay=(i*0.3)+'s';s.style.color=i%2?'#ffd166':'#2bd0b4';card.appendChild(s);});
+  })();
+
+  function show(id){
+    ['startScreen','learnScreen','gameScreen','winScreen'].forEach(function(s){byId(s).classList.add('hide');});
+    byId(id).classList.remove('hide');
+    byId('topbar').classList.toggle('hide', id!=='gameScreen');
+  }
+
+  /* ---------------- LEARN ---------------- */
+  var learnN=2, paired=false;
+  var pillMap={};
+  (function buildPills(){
+    [0,2,4,6,8].forEach(function(d){addPill('pillsEven',d);});
+    [1,3,5,7,9].forEach(function(d){addPill('pillsOdd',d);});
+    function addPill(host,d){var p=document.createElement('div');p.className='pill';p.textContent=d;byId(host).appendChild(p);pillMap[d]=p;}
+  })();
+
+  function renderDots(n){
+    var row=byId('dotrow'); row.innerHTML='';
+    for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot';d.style.animationDelay=(i*0.05)+'s';row.appendChild(d);}
+  }
+
+  function renderLearn(){
+    paired=false;
+    byId('lnVal').textContent=learnN;
+    byId('learnResult').innerHTML='';
+    byId('pairBtn').disabled=false;
+    renderDots(learnN);
+    byId('prevBtn').disabled=(learnN<=1);
+    byId('nextBtn').disabled=(learnN>=10);
+    byId('toGameBtn').classList.toggle('hide', learnN<10 && !window.__seen10);
+    // highlight the current number in its family
+    Object.keys(pillMap).forEach(function(k){pillMap[k].classList.remove('cur');});
+    if(pillMap[learnN]) pillMap[learnN].classList.add('cur');
+    byId('lbubble').textContent='عندنا '+learnN+'… اضغط خليهم يمسكوا بعض جوز جوز 🤝';
+  }
+
+  function pairUp(){
+    if(paired) return; paired=true;
+    byId('pairBtn').disabled=true;
+    var row=byId('dotrow'); row.innerHTML='';
+    var full=Math.floor(learnN/2), left=learnN%2, delay=0;
+    for(var i=0;i<full;i++){
+      var cap=document.createElement('div');cap.className='cap';
+      cap.innerHTML='<span class="d l"></span><span class="d r"></span>';
+      cap.style.animationDelay=delay+'s';
+      row.appendChild(cap); delay+=0.1;
+    }
+    if(left){
+      var lone=document.createElement('div');lone.className='cap lonely';
+      lone.innerHTML='<span class="d"></span><span class="lonetag">لحالها!</span>';
+      row.appendChild(lone);
+    }
+    var even=(learnN%2===0);
+    byId('learnResult').innerHTML = even
+      ? 'كلهم مسكوا بعض 🎉 ← <b class="e">زوجي</b>'
+      : 'بقيت وحدة لحالها 👀 ← <b class="o">فردي</b>';
+    if(pillMap[learnN]) pillMap[learnN].classList.add('cur');
+    byId('lbubble').textContent = even
+      ? 'شفت يا '+NAME+'؟ ما بقي ولا وحدة → زوجي! 🌟'
+      : 'شفت يا '+NAME+'؟ وحدة بقيت لحالها → فردي! 💪';
+    var av=byId('lavatar'); av.classList.add('happy'); setTimeout(function(){av.classList.remove('happy');},500);
+    if(even && !reduce && typeof confetti==='function')
+      confetti({particleCount:40,spread:60,origin:{y:.6},scalar:.8,colors:['#2bd0b4','#ffc23c','#6c8cff']});
+    if(learnN>=10) window.__seen10=true;
+  }
+
+  byId('pairBtn').addEventListener('click',pairUp);
+  byId('prevBtn').addEventListener('click',function(){if(learnN>1){learnN--;renderLearn();}});
+  byId('nextBtn').addEventListener('click',function(){
+    if(learnN<10){learnN++; if(learnN>=10)window.__seen10=true; renderLearn();}
+  });
+
+  /* ---------------- GAME ---------------- */
+  var round=0, correct=0, points=0, combo=0, answered=false, current=0, ones=0;
+  var numcard=byId('numcard'),binsEl=byId('bins'),peekBox=byId('peekBox'),
+      avatar=byId('avatar'),bubble=byId('bubble'),ptsVal=byId('ptsVal'),comboVal=byId('comboVal'),
+      comboChip=byId('comboChip'),progBar=byId('progBar');
+
+  var CHEER=['برافو يا '+NAME+'! 👏','يا بطل '+NAME+'! 🌟','صح صح! 🎉','يلا يا '+NAME+'! 🔥','ممتاز! 💯'];
+  var COMBO=['متواصل! 🔥','ما بتغلط! ⭐','بطل حقيقي! 🚀'];
+  var OOPS =['ولا يهمك يا '+NAME+' 💪','قريب! شوف الآحاد 👀','جرّب تفكر فيها 🙂'];
+  var ASK  =['يلا يا '+NAME+'، زوجي ولا فردي؟','شو رأيك يا '+NAME+'؟','صنّفه صح! 😃'];
+
+  function pickNumber(){
+    if(round<3) return 10+Math.floor(Math.random()*90);
+    var three=round>=6 && Math.random()<0.5;
+    return three?100+Math.floor(Math.random()*900):10+Math.floor(Math.random()*90);
+  }
+  function renderNumber(n){
+    var s=String(n),head=s.slice(0,-1),last=s.slice(-1);
+    numcard.className='numcard';
+    numcard.innerHTML='<span class="num">'+head+'<span class="ones">'+last+'<span class="onestag">الآحاد</span></span></span>';
+  }
+  function pairingHTML(d){
+    var h='<div class="dots">';
+    if(d===0){h+='<div class="pr"><div style="font-size:.7rem">صفر</div></div>';}
+    else{var full=Math.floor(d/2),left=d%2;
+      for(var i=0;i<full;i++)h+='<div class="pr"><span class="dt"></span><span class="dt"></span></div>';
+      if(left)h+='<div class="pr left"><span class="dt"></span><div style="font-size:.55rem;font-weight:800;color:var(--odd-ink)">لحالها</div></div>';}
+    return h+'</div>';
+  }
+  function floatPts(v){var p=document.createElement('div');p.className='pop-pts';p.textContent='+'+v;
+    byId('gameScreen').querySelector('.arena').appendChild(p);setTimeout(function(){p.remove();},1000);}
+
+  function newRound(){
+    answered=false; peekBox.innerHTML='';
+    current=pickNumber(); ones=current%10;
+    renderNumber(current); bubble.textContent=pick(ASK);
+    Array.prototype.forEach.call(binsEl.querySelectorAll('.bin'),function(b){b.classList.remove('correct','show');b.disabled=false;});
+    progBar.style.width=((round/TOTAL)*100)+'%';
+  }
+  function answer(choice){
+    if(answered) return; answered=true; round++;
+    var truth=(ones%2===0)?'even':'odd', isRight=(choice===truth);
+    var be=binsEl.querySelector('.even'),bo=binsEl.querySelector('.odd'),right=truth==='even'?be:bo;
+    Array.prototype.forEach.call(binsEl.querySelectorAll('.bin'),function(b){b.disabled=true;});
+    if(isRight){
+      correct++; combo++; var gain=10*combo; points+=gain; ptsVal.textContent=points; floatPts(gain);
+      numcard.classList.add(truth==='even'?'fly-even':'fly-odd'); right.classList.add('correct');
+      avatar.textContent='🤩'; avatar.classList.add('happy');
+      bubble.textContent=combo>=3?pick(COMBO):pick(CHEER);
+      if(combo>=2){comboVal.textContent=combo;comboChip.classList.add('on');}
+      celebrate(); setTimeout(function(){avatar.textContent='🦸‍♂️';avatar.classList.remove('happy');},600);
+      next(true);
+    }else{
+      combo=0; comboChip.classList.remove('on'); numcard.classList.add('bad'); right.classList.add('show');
+      avatar.textContent='😮'; bubble.textContent=pick(OOPS);
+      var cls=truth==='even'?'e':'o', word=truth==='even'?'زوجي':'فردي';
+      var reason=ones===0?'منزلة الآحاد صفر، وهي زوجي':truth==='even'?'كل النقاط أزواج، ما بقي ولا وحدة':'بقيت نقطة لحالها';
+      peekBox.innerHTML='<div class="peek"><div>منزلة الآحاد = <b style="font-family:var(--disp)">'+ones+'</b></div>'+pairingHTML(ones)+'<div class="say">'+reason+' ← إذن <b class="'+cls+'">'+word+'</b></div></div>';
+      setTimeout(function(){avatar.textContent='🦸‍♂️';},800); next(false);
+    }
+    progBar.style.width=((round/TOTAL)*100)+'%';
+  }
+  function next(auto){
+    if(auto && round<TOTAL){ setTimeout(newRound,850); return; }
+    var nb=document.createElement('button');nb.className='btn btn-next';nb.textContent=(round>=TOTAL?'النتيجة ⭐':'التالي ←');
+    nb.addEventListener('click',function(){ round>=TOTAL?showWin():newRound(); }); peekBox.appendChild(nb);
+  }
+  function celebrate(){ if(reduce||typeof confetti!=='function')return;
+    confetti({particleCount:60+combo*8,spread:70,origin:{y:.5},colors:['#ffc23c','#2bd0b4','#ff6b6b','#8ab6ff','#ffffff']}); }
+  function bigCelebrate(){ if(reduce||typeof confetti!=='function')return;
+    var end=Date.now()+1600;(function f(){confetti({particleCount:6,angle:60,spread:60,origin:{x:0}});confetti({particleCount:6,angle:120,spread:60,origin:{x:1}});if(Date.now()<end)requestAnimationFrame(f);})();
+    confetti({particleCount:140,spread:110,origin:{y:.5},scalar:1.1}); }
+  function showWin(){
+    show('winScreen'); progBar.style.width='100%';
+    byId('finalMsg').textContent='جمعت '+points+' نقطة — وصنّفت '+correct+' من '+TOTAL+' صح!';
+    var s='';for(var i=0;i<TOTAL;i++)s+=(i<correct?'⭐':'☆');byId('finalStars').textContent=s; bigCelebrate();
+  }
+  function startGame(){
+    round=0;correct=0;points=0;combo=0; ptsVal.textContent='0';comboChip.classList.remove('on');
+    avatar.textContent='🦸‍♂️'; show('gameScreen'); newRound();
+    if(!reduce&&typeof confetti==='function')confetti({particleCount:90,spread:80,origin:{y:.5},colors:['#ffc23c','#2bd0b4','#ff6b6b','#8ab6ff','#ffffff']});
+  }
+  binsEl.addEventListener('click',function(e){var b=e.target.closest('.bin');if(b&&!b.disabled)answer(b.getAttribute('data-val'));});
+
+  /* ---------------- NAV ---------------- */
+  byId('learnBtn').addEventListener('click',function(){learnN=2;window.__seen10=false;show('learnScreen');renderLearn();});
+  byId('skipBtn').addEventListener('click',startGame);
+  byId('skip2Btn').addEventListener('click',startGame);
+  byId('toGameBtn').addEventListener('click',startGame);
+  byId('againBtn').addEventListener('click',function(){show('startScreen');});
+})();
+</script>
+
+</body></html>
